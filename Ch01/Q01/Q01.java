@@ -1,6 +1,8 @@
 import java.util.HashSet;
 import java.util.Arrays;
 public class Q01{
+
+  // Object: is Unique. return false if duplicates is found.
   public Q01(){
   }
 
