@@ -1,17 +1,22 @@
 package Ch02;
 
 import java.util.HashSet;
+import java.util.Stack;
 
 
 /**
  * LLNode. Contains datastructure of singly linked node.
  * In addition, the solution for CTCI question 2.1 to 2.3 is also included.
+ * August 8, 2017 : 2.1 - 2.3
+ * August 9, 2017 : 2.4 - 2.6
  * @author frostzyh
  */
 public class LLNode {
     // Singly linked list.
     LLNode next = null;
     int num;
+
+    public LLNode(){}
 
     public LLNode(int num) {this.num = num;}
 
@@ -63,6 +68,7 @@ public class LLNode {
         return head;
     }
 
+
     @Override
     public String toString() {
         return Integer.toString(this.num);
@@ -92,6 +98,26 @@ public class LLNode {
         }
         sb.append("End");
         return sb.toString();
+    }
+
+    /**
+     * Return the length of the Linked List from the
+     * node to the end.
+     * TODO: This is not finished.
+     * Ideas: 1. The length should only be calculated once.
+     * 2. The class should store the length.
+     * 3. When the structure is changes, update the value of length.
+     * @param n
+     * @return
+     */
+    int length(){
+        LLNode n = this;
+        int counter = 0;
+        while(n != null){
+            counter++;
+            n = n.next;
+        }
+        return counter;
     }
 
     /**
@@ -201,7 +227,174 @@ public class LLNode {
         t.next = t.next.next;
     }
 
+    /**
+     * CTCI Q2.4 Partition
+     * Rearrange the list so that all elements smaller than k
+     * would be placed ahead of elements have same or larger value.
+     * @param node
+     * @param k
+     * @return
+     */
+    public static LLNode partition(LLNode node, int k ){
+        LLNode head = node;
+        LLNode tail = node;
+
+        while(node != null){
+            LLNode next = node.next;
+            if (node.num < k){
+                node.next = head;
+                head = node;
+            }
+            else{
+                tail.next = node;
+                tail = node;
+            }
+            node = next;
+        }
+        tail.next = null;
+
+        return head;
+    }
+
+    /**
+     * CTCI Q2.5 Sum Lists
+     * Input (7 -> 1 -> 6) + (5 -> 9 -> 2), that is 617+295
+     * Expected Output 2 -> 1 -> 9  that is 912.
+     * @param l1
+     * @param l2
+     * @return
+     */
+    public static LLNode SumListsReverse(LLNode l1, LLNode l2){
+        int num1 = 0;
+        int num2 = 0;
+        int carry = 1;
+        while (l1 != null){
+            num1 += carry * l1.num;
+            l1 = l1.next;
+            carry *= 10;
+        }
+        carry = 1;
+        while (l2 != null){
+            num2 += carry * l2.num;
+            l2 = l2.next;
+            carry *= 10;
+        }
+
+        int sum = num1 + num2;
+        LLNode ans = new LLNode();
+        LLNode curr = ans;
+        while(sum > 0){
+            curr.next = new LLNode(sum % 10);
+            curr = curr.next;
+            sum = sum/ 10;
+        }
+        return ans.next;
+    }
+
+
+    public static LLNode SumListsReverse2 (LLNode l1, LLNode l2){
+        LLNode ans = new LLNode();
+        LLNode curr = ans;
+
+        boolean carry = false;
+        while(l1 != null || l2 != null || carry){
+            int sum = carry ? 1 : 0;
+            if (l1 != null) {
+                sum += l1.num;
+                l1 = l1.next;
+            }
+            if (l2 != null){
+                sum += l2.num;
+                l2 = l2.next;
+            }
+            curr.next = new LLNode(sum % 10);
+            curr = curr.next;
+            carry = sum >= 10 ? true : false;
+        }
+        return ans.next;
+    }
+
+    /**
+     * Q 2.5 Extension. Calculate sum in forward order.
+     * @param l1
+     * @param l2
+     * @return
+     */
+    public static LLNode SumLists(LLNode l1, LLNode l2){
+        if (l1 == null || l2 == null) return l1 == null ? l2 : l1;
+
+        int diff = l2.length() - l1.length();
+        if (diff < 0) SumLists(l2, l1); // smaller one goes first
+
+        LLNode head = new LLNode(0);
+        head.num = SumListsHelper(head,l1,l2,diff) == 1 ? 1 : 0;
+        return head.num == 0? head.next : head;
+    }
+
+    private static int SumListsHelper(LLNode prev, LLNode l1, LLNode l2, int diff){
+        if (l1 == null) return 0;
+        int sum;
+        prev.next = new LLNode(0);
+
+        if (diff > 0) sum = l2.num + SumListsHelper(prev.next, l1, l2.next, diff-1);
+
+        else sum = l1.num + l2.num + SumListsHelper(prev.next, l1.next, l2.next, 0);
+
+        prev.next.num = sum % 10;
+        return sum >= 10 ? 1 : 0;
+    }
+
+    /**
+     * 2.6 Palindrone
+     * @param n
+     * @return
+     */
+    public static boolean isPalindrome(LLNode n){
+        if (n.next  == null) return true;
+        LLNode slowRunner = n;
+        LLNode fastRunner = n.next;
+
+        Stack<Integer> stack = new Stack<>();
+        stack.push(n.num);
+
+        while(fastRunner.next != null && fastRunner.next.next != null){
+            slowRunner = slowRunner.next;
+            fastRunner = fastRunner.next.next;
+            stack.push(slowRunner.num);
+        }
+        if (fastRunner.next != null) slowRunner = slowRunner.next; // length of list is Odd.(skip middle element).
+        while(!stack.isEmpty()){
+            slowRunner = slowRunner.next;
+            if (stack.pop() != slowRunner.num) return false;
+        }
+        return true;
+    }
+
+    public static boolean isPalindrome2(LLNode n){
+        if (n.next  == null) return true;
+        LLNode slowRunner = n;
+        LLNode fastRunner = n.next;
+
+        Stack<Integer> stack = new Stack<>();
+        stack.push(n.num);
+
+        while(fastRunner != null && fastRunner.next != null){
+            slowRunner = slowRunner.next;
+            fastRunner = fastRunner.next.next;
+            stack.push(slowRunner.num);
+        }
+        if (fastRunner == null) stack.pop(); // List has odd elements, pop middle one.
+
+        while(!stack.isEmpty()){
+            slowRunner = slowRunner.next;
+            if (stack.pop() != slowRunner.num) return false;
+        }
+        return true;
+    }
+
     public static void main(String[] args) {
+
+        /*
         RandomNumGenerator rng = new RandomNumGenerator('a','k');
         LLNode head = LLNode.generateList(rng.getArray());
 
@@ -246,6 +439,46 @@ public class LLNode {
         System.out.println(h1.printList());
         System.out.println();
 
+        System.out.println("Q2.4 Partition:");
+        int[] arr23 = {3, 5, 8, 5, 10, 2, 1};
+        LLNode l23 = LLNode.generateList(arr23);
+        System.out.println(l23.printList() + "  Partition = 5:");
+        System.out.println(partition(l23,5).printList());
+
+        System.out.println("Q2.5 Sum Lists:");
+        int[] arr241 = {7,1,6};
+        int[] arr242 = {5,9,7};
+        LLNode l241 = LLNode.generateList(arr241);
+        LLNode l242 = LLNode.generateList(arr242);
+        System.out.println("617 + 795 = 1412. The reversed output should be 2->1->4->1.");
+        System.out.println(SumListsReverse(l241,l242).printList());
+        System.out.println(SumListsReverse2(l241,l242).printList());
+
+
+        int[] arr243 = {2,7,9,4,5,0};
+        LLNode l243 = LLNode.generateList(arr243);
+        System.out.println("716 + 279450 = 280166. The output should be 2-8-0-1-6-6.");
+        System.out.println(SumLists(l241,l243).printList());
+        System.out.println();
+        */
+
+        System.out.println("Q2.6 Palindrome");
+        int[] arr25a = {1,7,6,5,3,5,6,7,1};
+        int[] arr25b = {1,7,6,5,5,6,7,1};
+        int[] arr25c = {1,7,6,5,3,5,6,2,1};
+        LLNode l25a = LLNode.generateList(arr25a);
+        LLNode l25b = LLNode.generateList(arr25b);
+        LLNode l25c = LLNode.generateList(arr25c);
+        System.out.println(l25a.printList());
+        System.out.println(isPalindrome(l25a));
+        System.out.println(isPalindrome2(l25a));
+        System.out.println(l25b.printList());
+        System.out.println(isPalindrome(l25b));
+        System.out.println(isPalindrome2(l25b));
+        System.out.println(l25c.printList());
+        System.out.println(isPalindrome(l25c));
+        System.out.println(isPalindrome2(l25c));
+        System.out.println();
 
     }
 }
