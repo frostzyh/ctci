@@ -9,6 +9,7 @@ import java.util.Stack;
  * In addition, the solution for CTCI question 2.1 to 2.3 is also included.
  * August 8, 2017 : 2.1 - 2.3
  * August 9, 2017 : 2.4 - 2.6
+ * August 10, 2017 : 2.7 - 2.8
  * @author frostzyh
  */
 public class LLNode {
@@ -392,6 +393,77 @@ public class LLNode {
         return true;
     }
 
+    /**
+     * Q 2.7 Intersection. Given two singly linked list, find the intersection
+     * which is the same object appears at both linked list.
+     * @param l1
+     * @param l2
+     * @return
+     */
+    public static LLNode Intersection(LLNode l1, LLNode l2){
+        // To improve efficient, we can compare the tail node of two lists, if their tail are not
+        // the same node, return null.
+        int len1 = l1.length();
+        int len2 = l2.length();
+
+        int diff = len2 - len1;
+        if (diff < 0){ // switch l1 and l2 so l1 is always smaller or equal to l2 in size.
+            LLNode temp = l1;
+            l1 = l2;
+            l2 = temp;
+            diff = - diff;
+        }
+
+        System.out.println("This is l1 :" + l1.printList());
+        System.out.println("This is l2 :" + l2.printList());
+
+        while(diff > 0 ){
+            l2 = l2.next;
+            diff --;
+        }
+        while(l2 != null){
+            if (l1 == l2) return l1;
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+        return null;
+    }
+
+    /**
+     * Q 2.8 Loop Detection
+     * Within the condition of a linked list with a loop, if slow goes s steps,
+     * then fast goes 2*s steps. Assume the nodes before the loop is u, then,
+     * when slow = |u| (loop starting point), fast = |2u|. fast - slow = u.
+     * Distance between slow and fast  = loop_size - mod(u,loop_size) = k.
+     * From this point, both slow and fast move forward, then they will meet each other in
+     * k steps since for each move, the distance between slow and fast reduces by 1.
+     * Since slow moves from the beginning of the loop to k, then the distance from collision point
+     * to the beginning is loop_size - k = loop_size - (loop_size - mod(u,loop_size)) = mod(u,loop_size).
+     * Since u = u/loop_size + mod(u,loop_size), so after u moves from the collision point, ==>
+     * - mod(u,loop_size) + u = u/loop_size => reaches starting point.
+     * @param ll
+     * @return
+     */
+    public static LLNode LoopDetection(LLNode ll){
+        LLNode slow = ll;
+        LLNode fast = ll;
+
+        while(fast != null && fast.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+            if (slow == fast) break;
+        }
+
+        if (fast == null || fast.next == null) return null;
+
+        slow = ll;
+        while(slow != fast){
+            slow = slow.next;
+            fast = fast.next;
+        }
+        return slow;
+    }
+
     public static void main(String[] args) {
 
         /*
@@ -460,7 +532,7 @@ public class LLNode {
         System.out.println("716 + 279450 = 280166. The output should be 2-8-0-1-6-6.");
         System.out.println(SumLists(l241,l243).printList());
         System.out.println();
-        */
+
 
         System.out.println("Q2.6 Palindrome");
         int[] arr25a = {1,7,6,5,3,5,6,7,1};
@@ -479,6 +551,47 @@ public class LLNode {
         System.out.println(isPalindrome(l25c));
         System.out.println(isPalindrome2(l25c));
         System.out.println();
+        */
 
+        System.out.println("Q2.7 Intersection");
+        // Create two linked list, l27a and l27b, which intersects.
+        int[] arr271 = {6,5,2,1,7};
+        int[] arr272 = {4,7,2};
+        int[] arr273 = {8,9,2,5,1,7};
+        LLNode list_inter = LLNode.generateList(arr273);
+        LLNode l27a = LLNode.generateList(arr271);
+        LLNode l27b = LLNode.generateList(arr272);
+        LLNode l27temp = l27a;
+        while(l27temp.next != null){
+            l27temp = l27temp.next;
+        }
+        l27temp.next = list_inter;
+        l27temp = l27b;
+        while(l27temp.next != null){
+            l27temp = l27temp.next;
+        }
+        l27temp.next = list_inter;
+        // Call Intersection method
+        System.out.println(Intersection(l27a,l27b).printList());
+
+
+        System.out.println("Q2.8 Loop Detection: ");
+        int[] arr28 = {9,5,2,1,3,4,6,7,8};
+        LLNode li28 = LLNode.generateList(arr28);
+
+        LLNode temp281 = li28;
+        for (int i = 0; i < 3; i++) temp281 = temp281.next;
+        LLNode temp282 = temp281;
+        while(temp282.next != null) temp282 = temp282.next;
+        temp282.next = temp281; // loop starts at 1
+        temp281 = li28;
+        for (int i = 0; i < 16; i++){
+            System.out.print(temp281.toString() + " => ");
+            temp281 = temp281.next;
+        }
+        System.out.println();
+
+        LLNode q28ans = LoopDetection(li28);
+        System.out.println(q28ans.toString());
     }
 }
